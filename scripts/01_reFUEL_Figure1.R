@@ -19,7 +19,7 @@ reg_match_materials_flows<-
 global_consumption_bp<-readGlobalEnergyConsumptionEJ()
 
 ###read material flows database and calculate trade
-material_flows_tot_trade<-readMaterialFlowsEJ(reg_match)
+material_flows_tot_trade<-readMaterialFlowsEJ(reg_match_materials_flows)
 
 #######IPCC-1.5D Report
 ###scenarios are defined in reFUEL_Functions.R
@@ -48,5 +48,8 @@ f<-fig1(tab1.5,
         minimum_renewable_share,
         year_of_renewable_share,
         max_deviation_2010)
+
+plot(f)
+
 
 ggsave("figures/Figure1.png",f)

@@ -462,8 +462,27 @@ readGlobalEnergyConsumptionEJ<-function(){
 #' aggregate to regions according to IPPC 1.5D Database
 #' @param reg_match paper regions
 #' @return aggregated materials flow database
+#' 
+readMaterialFlowsEJ<-function(reg_match_materials_flows){
+  ### Determine sum of imports and convert to EJ
+  
+  material_flows_regions<-readMaterialFlowsEJRegions(reg_match_materials_flows)
+  
+  material_flows_tot_trade<-
+    material_flows_regions %>% 
+    mutate(Flows=ifelse(Flows>0,
+                        Flows,
+                        0)) %>% 
+    group_by(Year) %>% 
+    summarise(Tot_trade=sum(Flows))
+  
+  return(material_flows_tot_trade)
+  
 
-readMaterialFlowsEJ<-function(reg_match) {
+  
+}
+
+readMaterialFlowsEJRegions<-function(reg_match_materials_flows) {
   
   ### Read data from file
   material_flows<-
@@ -505,6 +524,7 @@ readMaterialFlowsEJ<-function(reg_match) {
            Flows=Flows*Conv)
   
   ### Regional aggregation according to IPCC_1.5D
+  ### convert TJ_to_EJ
   material_flows_regions<-
     full_join(material_flows,
               reg_match_materials_flows) %>% 
@@ -513,22 +533,13 @@ readMaterialFlowsEJ<-function(reg_match) {
              Flow.Type,
              Year) %>% 
     summarise(Flows=sum(Flows,
-                        na.rm=TRUE)) %>% 
+                        na.rm=TRUE)*TJ_to_EJ) %>% 
     filter(!(IPCC_1.5D %in% c("NA")))
   
-  ### Determine sum of imports and convert to EJ
-  
-  material_flows_tot_trade<-
-    material_flows_regions %>% 
-    mutate(Flows=ifelse(Flows>0,
-                        Flows,
-                        0)) %>% 
-    group_by(Year) %>% 
-    summarise(Tot_trade=sum(Flows)*TJ_to_EJ)
-  
-  return(material_flows_tot_trade)
-  
+  return(material_flows_regions)
 }
+  
+
 
 #' Calculates data for figure 2 in the paper.
 #' Country aggregation input files need to have a column Region and a column Aggregate_Region
